@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Evaluation, MessageSender } from "../types";
 
@@ -23,13 +22,11 @@ const SYSTEM_INSTRUCTION = `
 `;
 
 export const getBulmanResponse = async (userMessage: string, chatHistory: { role: string; parts: { text: string }[] }[]) => {
-  // 호출 시점에 API 키를 확인하고 인스턴스를 생성
-  const API_KEY = process.env.API_KEY || "";
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3-pro-preview",
       contents: [
         ...chatHistory,
         { role: "user", parts: [{ text: userMessage }] }
@@ -62,7 +59,9 @@ export const getBulmanResponse = async (userMessage: string, chatHistory: { role
       }
     });
 
-    return JSON.parse(response.text);
+    const text = response.text;
+    if (!text) throw new Error("API response text is empty");
+    return JSON.parse(text);
   } catch (error) {
     console.error("Gemini API Error:", error);
     throw error;
